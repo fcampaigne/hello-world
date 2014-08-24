@@ -39,6 +39,8 @@
 #include <chrono>
 //asio
 #include <boost/asio.hpp>
+
+#include "SNTime.h"
 //namespace management
 using namespace std;
 namespace logging = boost::log;
@@ -125,7 +127,9 @@ void testCPPChronoTime()
 {
 	  using namespace std::chrono;
 
+	  cout << "high_resolution_clock::is_steady: " << high_resolution_clock::is_steady << endl;
 	  high_resolution_clock::time_point tp1 = high_resolution_clock::now();
+
 	  system_clock::time_point tp2 = system_clock::now();
 	  steady_clock::time_point tp3 = steady_clock::now();
 	  cout << "high_resolution_clock time since epoch: " << tp1.time_since_epoch().count() << endl;
@@ -148,9 +152,20 @@ void testCPPChronoTime()
 	  high_resolution_clock::time_point t4 = high_resolution_clock::now();
 	  duration<double> time_span2 = duration_cast<duration<double>>(t4 - t3);
 	  std::cout << (long long)time_span2.count() << std::endl;
-
-
 }
+
+void testSNTime()
+{
+	using namespace sn_time;
+
+	MsgTimePoint msgTime1 = getMsgTimePoint();
+	cout << "message time count since epoch: " << msgTime1.time_since_epoch().count() << endl;
+
+	HighResTimePoint msgTime2 = getHighResTimePoint();
+	cout << "HighRes time count since epoch: " << msgTime2.time_since_epoch().count() << endl;
+	cout << typeid(HighResTimePoint::period).name() << endl;
+}
+
 void initLogging()
 {
 	logging::add_file_log(keywords::file_name = "../../log/hello_%N.log", /*< file name pattern >*/
@@ -228,9 +243,11 @@ int main()
 
 	testBoostDateTime();
 	testCPPChronoTime();
+	testSNTime();
 	initLogging();
 	testLogging();
 	testTimers();
+
 	closelog();
 	return 0;
 }
