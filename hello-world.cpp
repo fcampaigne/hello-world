@@ -33,6 +33,10 @@
 #include "boost/thread/thread.hpp"
 #include <unistd.h>
 #include <string>
+//chrono
+#include <ctime>
+#include <ratio>
+#include <chrono>
 //asio
 #include <boost/asio.hpp>
 //namespace management
@@ -55,6 +59,9 @@ void testBoostDateTime()
 {
 	try
 	{
+		double* x = new double(1.5);
+		cout << *x << std::endl;
+		delete x;
 		cout << "Hello World!!! testing boost date time" << endl;
 		// The following date is in ISO 8601 extended format (CCYY-MM-DD)
 		string s("2001-10-9"); //2001-October-09
@@ -79,11 +86,14 @@ void testBoostDateTime()
 		cout << "time total_nanoseconds: "
 				<< t1.time_of_day().total_nanoseconds() << std::endl;
 
+		boost::posix_time::ptime t2;
+		cout << "default time: " << t2.time_of_day() << std::endl;
+
 		usleep(1000); //microseconds
 		boost::this_thread::sleep(boost::posix_time::milliseconds(100));
-		boost::posix_time::ptime t2 =
+		boost::posix_time::ptime t3 =
 				boost::posix_time::microsec_clock::universal_time();
-		boost::posix_time::time_duration diff = t2 - t1; //posix
+		boost::posix_time::time_duration diff = t3 - t1; //posix
 		cout << ((double) diff.total_milliseconds()) / 1000.0
 				<< " seconds delayed" << endl;
 		//Read ISO Standard(CCYYMMDD) and output ISO Extended
@@ -110,6 +120,36 @@ void testBoostDateTime()
 	{
 		cout << "  Exception: " << e.what() << endl;
 	}
+}
+void testCPPChronoTime()
+{
+	  using namespace std::chrono;
+
+	  high_resolution_clock::time_point tp1 = high_resolution_clock::now();
+	  system_clock::time_point tp2 = system_clock::now();
+	  steady_clock::time_point tp3 = steady_clock::now();
+	  cout << "high_resolution_clock time since epoch: " << tp1.time_since_epoch().count() << endl;
+	  cout << "system_clock time since epoch         : " << tp2.time_since_epoch().count() << endl;
+	  cout << "steady_clock time since epoch         : " << tp3.time_since_epoch().count() << endl;
+
+
+	  high_resolution_clock::time_point t1 = high_resolution_clock::now();
+
+	  std::cout << "printing out 1000 stars...\n";
+	  for (int i=0; i<1000; ++i) std::cout << "*";
+	  std::cout << std::endl;
+
+	  high_resolution_clock::time_point t2 = high_resolution_clock::now();
+
+	  duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
+
+	  std::cout << "It took me " << time_span.count() << " seconds." << std::endl;
+	  high_resolution_clock::time_point t3;
+	  high_resolution_clock::time_point t4 = high_resolution_clock::now();
+	  duration<double> time_span2 = duration_cast<duration<double>>(t4 - t3);
+	  std::cout << (long long)time_span2.count() << std::endl;
+
+
 }
 void initLogging()
 {
@@ -187,6 +227,7 @@ int main()
 	syslog(LOG_INFO, "A tree falls in a forest");
 
 	testBoostDateTime();
+	testCPPChronoTime();
 	initLogging();
 	testLogging();
 	testTimers();
