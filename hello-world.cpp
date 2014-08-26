@@ -15,6 +15,7 @@
 //============================================================================
 
 #include <iostream>
+#include <limits>
 //syslog
 #include <syslog.h>
 #include <unistd.h>
@@ -48,6 +49,8 @@ namespace src = boost::log::sources;
 namespace sinks = boost::log::sinks;
 namespace keywords = boost::log::keywords;
 using namespace logging::trivial;
+
+typedef std::numeric_limits< double > dbl;
 
 src::severity_logger<severity_level> lg;
 
@@ -157,13 +160,18 @@ void testCPPChronoTime()
 void testSNTime()
 {
 	using namespace sn_time;
-
+	cout.precision(dbl::digits10);
 	MsgTimePoint msgTime1 = getMsgTimePoint();
 	cout << "message time count since epoch: " << msgTime1.time_since_epoch().count() << endl;
-
-	HighResTimePoint msgTime2 = getHighResTimePoint();
-	cout << "HighRes time count since epoch: " << msgTime2.time_since_epoch().count() << endl;
+	MsgTimePoint msgTime2 = msgTime1;
+	MsgTimePoint msgTime3(msgTime2);
+	cout << "= and copy: " << msgTime2.time_since_epoch().count() << " " << msgTime3.time_since_epoch().count() << endl;
+	HighResTimePoint hiResTime1 = getHighResTimePoint();
+	cout << "HighRes time count since epoch: " << hiResTime1.time_since_epoch().count() << endl;
 	cout << typeid(HighResTimePoint::period).name() << endl;
+	cout <<  std::chrono::system_clock::time_point::period::num << endl;
+	cout <<  std::chrono::system_clock::time_point::period::den << endl;
+	cout <<  fixed << ((double)(msgTime1.time_since_epoch().count()))/(double)MsgTimePoint::period::den << endl;
 }
 
 void initLogging()
