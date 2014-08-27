@@ -14,6 +14,8 @@
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
+#include "ftwTime.h"
+
 #include <iostream>
 #include <limits>
 //syslog
@@ -29,9 +31,9 @@
 #include <boost/log/sources/severity_logger.hpp>
 #include <boost/log/sources/record_ostream.hpp>
 //date time
-#include "boost/date_time/gregorian/gregorian.hpp"
-#include "boost/date_time/posix_time/posix_time.hpp"
-#include "boost/thread/thread.hpp"
+#include <boost/date_time/gregorian/gregorian.hpp>
+#include <boost/date_time/posix_time/posix_time.hpp>
+#include <boost/thread/thread.hpp>
 #include <unistd.h>
 #include <string>
 //chrono
@@ -41,7 +43,7 @@
 //asio
 #include <boost/asio.hpp>
 
-#include "SNTime.h"
+
 //namespace management
 using namespace std;
 namespace logging = boost::log;
@@ -49,10 +51,41 @@ namespace src = boost::log::sources;
 namespace sinks = boost::log::sinks;
 namespace keywords = boost::log::keywords;
 using namespace logging::trivial;
+using namespace ftw;
 
 typedef std::numeric_limits< double > dbl;
 
 src::severity_logger<severity_level> lg;
+
+
+
+void testFTWTime()
+{
+	Time::MsgTimePoint msgTime1 = Time::getMsgTimePoint();
+	cout << "message time count since epoch: " << msgTime1.time_since_epoch().count() << endl;
+
+
+	Time::MsgTimePoint msgTime2 = msgTime1;
+	Time::MsgTimePoint msgTime3(msgTime2);
+
+	cout << "= and copy: " << msgTime2.time_since_epoch().count() << " " << msgTime3.time_since_epoch().count() << endl;
+
+	Time::HighResTimePoint hiResTime1 = Time::getHighResTimePoint();
+
+	cout << "HighRes time count since epoch: " << hiResTime1.time_since_epoch().count() << endl;
+
+	cout << typeid(Time::HighResTimePoint::period).name() << endl;
+	cout <<  "MsgPrecision: " << Time::MsgPrecision << endl;
+	cout <<  "HighResPrecision: " << Time::HighResPrecision << endl;
+
+	streamsize old = cout.precision(Time::MsgPrecision);
+	cout <<  fixed << Time::getMsgSeconds() << endl;
+	cout.precision(Time::HighResPrecision);
+	cout <<  fixed << Time::getHighResSeconds() << endl;
+
+	cout.precision(old);
+
+}
 
 void startSysLogging(const char* id, int level)
 {
@@ -157,22 +190,6 @@ void testCPPChronoTime()
 	  std::cout << (long long)time_span2.count() << std::endl;
 }
 
-void testSNTime()
-{
-	using namespace sn_time;
-	cout.precision(dbl::digits10);
-	MsgTimePoint msgTime1 = getMsgTimePoint();
-	cout << "message time count since epoch: " << msgTime1.time_since_epoch().count() << endl;
-	MsgTimePoint msgTime2 = msgTime1;
-	MsgTimePoint msgTime3(msgTime2);
-	cout << "= and copy: " << msgTime2.time_since_epoch().count() << " " << msgTime3.time_since_epoch().count() << endl;
-	HighResTimePoint hiResTime1 = getHighResTimePoint();
-	cout << "HighRes time count since epoch: " << hiResTime1.time_since_epoch().count() << endl;
-	cout << typeid(HighResTimePoint::period).name() << endl;
-	cout <<  std::chrono::system_clock::time_point::period::num << endl;
-	cout <<  std::chrono::system_clock::time_point::period::den << endl;
-	cout <<  fixed << ((double)(msgTime1.time_since_epoch().count()))/(double)MsgTimePoint::period::den << endl;
-}
 
 void initLogging()
 {
@@ -240,6 +257,7 @@ void testTimers()
 	BOOST_LOG_SEV(lg, debug)<< "start asynchronous timer after wait call: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
 	io.run();
 }
+
 int main()
 {
 	cout << "Hello World!!! testing syslog...tail -f /var/log/messages" << endl;
@@ -251,7 +269,7 @@ int main()
 
 	testBoostDateTime();
 	testCPPChronoTime();
-	testSNTime();
+	testFTWTime();
 	initLogging();
 	testLogging();
 	testTimers();
