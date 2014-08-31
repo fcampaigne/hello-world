@@ -5,7 +5,6 @@
  *      Author: fred
  */
 
-
 //============================================================================
 // Name        : hello-world.cpp
 // Author      : fcampaigne
@@ -13,11 +12,12 @@
 // Copyright   : gnu
 // Description : Hello World in C++, Ansi-style
 //============================================================================
-
 #include "ftwTime.h"
+#include "ASIO.h"
 
 #include <iostream>
 #include <limits>
+#include <cstdlib>//for system call
 //syslog
 #include <syslog.h>
 #include <unistd.h>
@@ -43,7 +43,6 @@
 //asio
 #include <boost/asio.hpp>
 
-
 //namespace management
 using namespace std;
 namespace logging = boost::log;
@@ -53,35 +52,35 @@ namespace keywords = boost::log::keywords;
 using namespace logging::trivial;
 using namespace ftw;
 
-typedef std::numeric_limits< double > dbl;
+typedef std::numeric_limits<double> dbl;
 
 src::severity_logger<severity_level> lg;
-
-
 
 void testFTWTime()
 {
 	Time::MsgTimePoint msgTime1 = Time::getMsgTimePoint();
-	cout << "message time count since epoch: " << msgTime1.time_since_epoch().count() << endl;
-
+	cout << "message time count since epoch: "
+			<< msgTime1.time_since_epoch().count() << endl;
 
 	Time::MsgTimePoint msgTime2 = msgTime1;
 	Time::MsgTimePoint msgTime3(msgTime2);
 
-	cout << "= and copy: " << msgTime2.time_since_epoch().count() << " " << msgTime3.time_since_epoch().count() << endl;
+	cout << "= and copy: " << msgTime2.time_since_epoch().count() << " "
+			<< msgTime3.time_since_epoch().count() << endl;
 
 	Time::HighResTimePoint hiResTime1 = Time::getHighResTimePoint();
 
-	cout << "HighRes time count since epoch: " << hiResTime1.time_since_epoch().count() << endl;
+	cout << "HighRes time count since epoch: "
+			<< hiResTime1.time_since_epoch().count() << endl;
 
 	cout << typeid(Time::HighResTimePoint::period).name() << endl;
-	cout <<  "MsgPrecision: " << Time::MsgPrecision << endl;
-	cout <<  "HighResPrecision: " << Time::HighResPrecision << endl;
+	cout << "MsgPrecision: " << Time::MsgPrecision << endl;
+	cout << "HighResPrecision: " << Time::HighResPrecision << endl;
 
 	streamsize old = cout.precision(Time::MsgPrecision);
-	cout <<  fixed << Time::getMsgSeconds() << endl;
+	cout << fixed << Time::getMsgSeconds() << endl;
 	cout.precision(Time::HighResPrecision);
-	cout <<  fixed << Time::getHighResSeconds() << endl;
+	cout << fixed << Time::getHighResSeconds() << endl;
 
 	cout.precision(old);
 
@@ -161,35 +160,38 @@ void testBoostDateTime()
 }
 void testCPPChronoTime()
 {
-	  using namespace std::chrono;
+	using namespace std::chrono;
 
-	  cout << "high_resolution_clock::is_steady: " << high_resolution_clock::is_steady << endl;
-	  high_resolution_clock::time_point tp1 = high_resolution_clock::now();
+	cout << "high_resolution_clock::is_steady: "
+			<< high_resolution_clock::is_steady << endl;
+	high_resolution_clock::time_point tp1 = high_resolution_clock::now();
 
-	  system_clock::time_point tp2 = system_clock::now();
-	  steady_clock::time_point tp3 = steady_clock::now();
-	  cout << "high_resolution_clock time since epoch: " << tp1.time_since_epoch().count() << endl;
-	  cout << "system_clock time since epoch         : " << tp2.time_since_epoch().count() << endl;
-	  cout << "steady_clock time since epoch         : " << tp3.time_since_epoch().count() << endl;
+	system_clock::time_point tp2 = system_clock::now();
+	steady_clock::time_point tp3 = steady_clock::now();
+	cout << "high_resolution_clock time since epoch: "
+			<< tp1.time_since_epoch().count() << endl;
+	cout << "system_clock time since epoch         : "
+			<< tp2.time_since_epoch().count() << endl;
+	cout << "steady_clock time since epoch         : "
+			<< tp3.time_since_epoch().count() << endl;
 
+	high_resolution_clock::time_point t1 = high_resolution_clock::now();
 
-	  high_resolution_clock::time_point t1 = high_resolution_clock::now();
+	std::cout << "printing out 1000 stars...\n";
+	for (int i = 0; i < 1000; ++i)
+		std::cout << "*";
+	std::cout << std::endl;
 
-	  std::cout << "printing out 1000 stars...\n";
-	  for (int i=0; i<1000; ++i) std::cout << "*";
-	  std::cout << std::endl;
+	high_resolution_clock::time_point t2 = high_resolution_clock::now();
 
-	  high_resolution_clock::time_point t2 = high_resolution_clock::now();
+	duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
 
-	  duration<double> time_span = duration_cast<duration<double>>(t2 - t1);
-
-	  std::cout << "It took me " << time_span.count() << " seconds." << std::endl;
-	  high_resolution_clock::time_point t3;
-	  high_resolution_clock::time_point t4 = high_resolution_clock::now();
-	  duration<double> time_span2 = duration_cast<duration<double>>(t4 - t3);
-	  std::cout << (long long)time_span2.count() << std::endl;
+	std::cout << "It took me " << time_span.count() << " seconds." << std::endl;
+	high_resolution_clock::time_point t3;
+	high_resolution_clock::time_point t4 = high_resolution_clock::now();
+	duration<double> time_span2 = duration_cast<duration<double>>(t4 - t3);
+	std::cout << (long long) time_span2.count() << std::endl;
 }
-
 
 void initLogging()
 {
@@ -222,40 +224,65 @@ void testLogging()
 	BOOST_LOG_SEV(lg, fatal)<< fl(__FILE__,__LINE__) << "A fatal severity message";
 
 }
-void timerHandler(const boost::system::error_code& /*e*/,
+void timerHandler1(const boost::system::error_code& /*e*/,
 		boost::asio::deadline_timer* t, int* count)
 {
-	BOOST_LOG_SEV(lg, debug)<< "timer fired: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
 	if (*count < 5)
 	{
-		BOOST_LOG_SEV(lg, debug)<< *count;
-		++(*count); t->expires_at(t->expires_at() + boost::posix_time::seconds(1));
-		t->async_wait(boost::bind(timerHandler,
+		//BOOST_LOG_SEV(lg, debug)<< *count;
+		++(*count);
+		t->expires_at(t->expires_at() + boost::posix_time::seconds(1));
+		t->async_wait(boost::bind(timerHandler1,
 						boost::asio::placeholders::error, t, count));
+		BOOST_LOG_SEV(lg, debug)<< "timer 1 fired: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
 	}
 }
+void timerHandler2(const boost::system::error_code& /*e*/,
+		boost::asio::deadline_timer* t, int* count)
+{
+	if (*count < 5)
+	{
+		//BOOST_LOG_SEV(lg, debug)<< *count;
+		++(*count);
+		t->expires_at(t->expires_at() + boost::posix_time::milliseconds(250));
+		t->async_wait(boost::bind(timerHandler2,
+						boost::asio::placeholders::error, t, count));
+		BOOST_LOG_SEV(lg, debug)<< "timer 2 fired: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
+	}
+}
+
 void testTimers()
 {
 	//synchronous timer
-	boost::asio::io_service io;
-	BOOST_LOG_SEV(lg, debug)<< "start synchronous timer: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
+	BOOST_LOG_SEV(lg, debug)<< "start synchronous timer t: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
 	for (int i = 0; i < 3; i++)
 	{
-		boost::asio::deadline_timer* t = new boost::asio::deadline_timer(io,
+		boost::asio::deadline_timer* t = new boost::asio::deadline_timer(ASIO::getIOService(),
 				boost::posix_time::seconds(2));
 		t->wait();
-		BOOST_LOG_SEV(lg, debug)<< "end synchronous timer: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
+		BOOST_LOG_SEV(lg, debug)<< "end synchronous timer t: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
 		delete t;
 	}
-	//asynchronous callback
-	BOOST_LOG_SEV(lg, debug)<< "start asynchronous timer: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
+	//asynchronous callback t1
+	BOOST_LOG_SEV(lg, debug)<< "start asynchronous timer t1: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
 	int count = 0;
-	boost::asio::deadline_timer t(io, boost::posix_time::seconds(1));
-	t.async_wait(
-			boost::bind(timerHandler, boost::asio::placeholders::error, &t,
+	boost::asio::deadline_timer* t1 = new boost::asio::deadline_timer(ASIO::getIOService(), boost::posix_time::seconds(1));
+	t1->async_wait(
+			boost::bind(timerHandler1, boost::asio::placeholders::error, t1,
 					&count));
-	BOOST_LOG_SEV(lg, debug)<< "start asynchronous timer after wait call: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
-	io.run();
+	BOOST_LOG_SEV(lg, debug)<< "end asynchronous timer t1 after wait call: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
+
+	//asynchronous callback t2
+	BOOST_LOG_SEV(lg, debug)<< "start asynchronous timer t2: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
+	int count2 = 0;
+	boost::asio::deadline_timer* t2 = new boost::asio::deadline_timer(ASIO::getIOService(), boost::posix_time::milliseconds(250));
+	t2->async_wait(
+			boost::bind(timerHandler2, boost::asio::placeholders::error, t2,
+					&count2));
+	BOOST_LOG_SEV(lg, debug)<< "end asynchronous timer t2 after wait call: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
+
+	ASIO::getIOService().run();
+	delete t1;
 }
 
 int main()
@@ -277,5 +304,4 @@ int main()
 	closelog();
 	return 0;
 }
-
 
