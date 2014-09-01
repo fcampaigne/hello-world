@@ -78,9 +78,9 @@ void testFTWTime()
 	cout << "HighResPrecision: " << Time::HighResPrecision << endl;
 
 	streamsize old = cout.precision(Time::MsgPrecision);
-	cout << fixed << Time::getMsgSeconds() << endl;
+	//cout << fixed << Time::getMsgSeconds() << endl;
 	cout.precision(Time::HighResPrecision);
-	cout << fixed << Time::getHighResSeconds() << endl;
+	//cout << fixed << Time::getHighResSeconds() << endl;
 
 	cout.precision(old);
 
