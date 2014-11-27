@@ -232,8 +232,9 @@ void timerHandler1(const boost::system::error_code& /*e*/,
 		//BOOST_LOG_SEV(lg, debug)<< *count;
 		++(*count);
 		t->expires_at(t->expires_at() + boost::posix_time::seconds(1));
-		t->async_wait(boost::bind(timerHandler1,
-						boost::asio::placeholders::error, t, count));
+		t->async_wait(
+				boost::bind(timerHandler1, boost::asio::placeholders::error, t,
+						count));
 		BOOST_LOG_SEV(lg, debug)<< "timer 1 fired: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
 	}
 }
@@ -245,8 +246,9 @@ void timerHandler2(const boost::system::error_code& /*e*/,
 		//BOOST_LOG_SEV(lg, debug)<< *count;
 		++(*count);
 		t->expires_at(t->expires_at() + boost::posix_time::milliseconds(250));
-		t->async_wait(boost::bind(timerHandler2,
-						boost::asio::placeholders::error, t, count));
+		t->async_wait(
+				boost::bind(timerHandler2, boost::asio::placeholders::error, t,
+						count));
 		BOOST_LOG_SEV(lg, debug)<< "timer 2 fired: " << boost::posix_time::microsec_clock::universal_time().time_of_day();
 	}
 }
